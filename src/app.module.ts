@@ -1,22 +1,39 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { BookModule } from './book/book.module';
 import { AuthModule } from './auth/auth.module';
-
+import { LoggerMiddleware } from './logger/logger.middleware';
+import { AuthController } from './auth/auth.controller';
+import { CatsModule } from './cats/cats.module';
+import { CatsController } from './cats/cats.controller';
+import { TasksModule } from './tasks/tasks.module';
+import { Tesks } from './tesks/tesks';
+import { apiTokenCheck } from './middlware/token.Middlware';
+import configuration from './config/configurations';
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
+      load: [configuration],
     }),
     MongooseModule.forRoot(process.env.DB_URI),
-    BookModule,
     AuthModule,
+    CatsModule,
+    TasksModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  providers: [Tesks],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(apiTokenCheck)
+      //*.exclude({path:'cats',method : RequestMethod.GET})
+      .forRoutes({ path: '*', method: RequestMethod.ALL }, CatsController);
+  }
+}

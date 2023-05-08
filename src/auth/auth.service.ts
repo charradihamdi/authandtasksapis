@@ -51,4 +51,5 @@ export class AuthService {
 
     return { token };
   }
+
 }
