@@ -6,6 +6,7 @@ import {
   Injectable,
   Scope,
   Inject,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 //import { Task } from './interface/task.interface';
@@ -26,6 +27,7 @@ import {
 import { Request } from 'express';
 import { TaskRepository } from './repository/task.repository';
 import { GetTaskFilterDto } from './dto/get-filter.dto';
+import { statusTask } from './enum/status.enum';
 @Injectable()
 export class TasksService {
   constructor(
@@ -112,10 +114,17 @@ export class TasksService {
     return this.taskRepository.find();
   }
 
-  // async createTask(createTaskDto: createTaskDto): Promise<taskEntity> {
-  //   //console.log(createTaskDto);
-  //   const { name, description, status } = createTaskDto;
-  //   const newTask = await this.taskRepository.insert(createTaskDto);
-  //   return newTask;
-  // }
+  async createTask(createTaskDto: createTaskDto): Promise<any> {
+    const { name, description } = createTaskDto;
+    const task = new TaskEntity();
+    task.name = name;
+    task.description = description;
+    task.status = statusTask.OPEN;
+    try {
+      await task.save();
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+    return task;
+  }
 }

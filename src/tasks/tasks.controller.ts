@@ -23,16 +23,16 @@ import { ToUpperCasePipe } from './pipes/to-upper-case/to-upper-case.pipe';
 export class TasksController {
   private Logger = new Logger('task controller');
   constructor(private taskService: TasksService) {}
-  // @Post()
-  // // @ApiResponse({
-  // //   status: 201,
-  // //   description: 'The Task has been successfully created.',
-  // // })
-  // //@ApiResponse({ status: 403, description: 'Forbidden.' })
-  // async create(@Body(ToUpperCasePipe) createTaskDto: createTaskDto) {
-  //   const { name, description, status } = createTaskDto;
-  //   return this.taskService.createTask(createTaskDto);
-  // }
+  @Post()
+  // @ApiResponse({
+  //   status: 201,
+  //   description: 'The Task has been successfully created.',
+  // })
+  //@ApiResponse({ status: 403, description: 'Forbidden.' })
+  async create(@Body(ToUpperCasePipe) createTaskDto: createTaskDto) {
+    const { name, description, status } = createTaskDto;
+    return this.taskService.createTask(createTaskDto);
+  }
   @Get()
   async findAll(
     filterDto: GetTaskFilterDto,
