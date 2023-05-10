@@ -38,7 +38,7 @@ export class TaskRepository extends Repository<TaskEntity> {
     }
     if (search) {
       query.andWhere(
-        '(task.title LIKE :search OR task.description LIKE :search)',
+        '(task.name LIKE :search OR task.description LIKE :search)',
         { search: `%${search}%` },
       );
     }

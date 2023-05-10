@@ -29,8 +29,8 @@ import { GetTaskFilterDto } from './dto/get-filter.dto';
 @Injectable()
 export class TasksService {
   constructor(
-    @InjectRepository(TaskRepository)
-    private taskRepository: TaskRepository,
+    @InjectRepository(TaskEntity)
+    private taskRepository: Repository<TaskEntity>,
   ) {}
 
   // async createMany(tasks: TaskEntity[]) {
@@ -109,12 +109,13 @@ export class TasksService {
   }
 
   async findAll(filterDto: GetTaskFilterDto) {
-    return this.taskRepository.getTasks(filterDto);
+    return this.taskRepository.find();
   }
 
-  async createTask(createTaskDto: createTaskDto) {
-    //console.log(createTaskDto);
-    const newTask = await this.taskRepository.createTask(createTaskDto);
-    return newTask;
-  }
+  // async createTask(createTaskDto: createTaskDto): Promise<taskEntity> {
+  //   //console.log(createTaskDto);
+  //   const { name, description, status } = createTaskDto;
+  //   const newTask = await this.taskRepository.insert(createTaskDto);
+  //   return newTask;
+  // }
 }
