@@ -5,8 +5,13 @@ import { Model } from 'mongoose';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { User } from './schemas/user.schema';
 
+type JwtPayload = {
+  sub: string;
+  username: string;
+};
+
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<User>,
@@ -17,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload) {
+  async validate(payload): Promise<User> {
     const { id } = payload;
 
     const user = await this.userModel.findById(id);

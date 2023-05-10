@@ -1,3 +1,4 @@
+import { TaskEntity } from './tasks/entity/task.entity';
 import {
   MiddlewareConsumer,
   Module,
@@ -12,28 +13,44 @@ import { AuthController } from './auth/auth.controller';
 import { CatsModule } from './cats/cats.module';
 import { CatsController } from './cats/cats.controller';
 import { TasksModule } from './tasks/tasks.module';
-import { Tesks } from './tesks/tesks';
+import { CacheModule } from '@nestjs/cache-manager';
 import { apiTokenCheck } from './middlware/token.Middlware';
-import configuration from './config/configurations';
+import { ConfigServiceRoot } from './config/configurations';
+import databaseConfig from './config/database.config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { TasksController } from './tasks/tasks.controller';
+import { CommonModule } from 'common/common.module';
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      envFilePath: '.env',
-      isGlobal: true,
-      load: [configuration],
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: '127.0.0.1',
+      port: 5444,
+      username: 'postgres',
+      password: '123456',
+      database: 'tasks',
+      entities: [TaskEntity],
+      synchronize: true,
     }),
+    CacheModule.register(),
     MongooseModule.forRoot(process.env.DB_URI),
     AuthModule,
     CatsModule,
     TasksModule,
+    CommonModule,
   ],
-  providers: [Tesks],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(apiTokenCheck)
-      //*.exclude({path:'cats',method : RequestMethod.GET})
-      .forRoutes({ path: '*', method: RequestMethod.ALL }, CatsController);
-  }
+export class AppModule {
+  constructor(private dataSource: DataSource) {}
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer
+  //     .apply(apiTokenCheck)
+  //     //*.exclude({path:'cats',method : RequestMethod.GET})
+  //     .forRoutes(
+  //       { path: '*', method: RequestMethod.ALL },
+  //       CatsController,
+  //       TasksController,
+  //     );
+  // }
 }

@@ -4,52 +4,117 @@ import {
   HttpException,
   NotFoundException,
   Injectable,
+  Scope,
+  Inject,
 } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
 //import { Task } from './interface/task.interface';
 import { createTaskDto } from './dto/create-task.dto';
 import { TaskDto } from './dto/task.dto';
 import { Task } from './schemas/task.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { TaskEntity } from './entity/task.entity';
+import {
+  DataSource,
+  Repository,
+  EntitySubscriberInterface,
+  EventSubscriber,
+  InsertEvent,
+} from 'typeorm';
+import { Request } from 'express';
+import { TaskRepository } from './repository/task.repository';
+import { GetTaskFilterDto } from './dto/get-filter.dto';
 @Injectable()
 export class TasksService {
   constructor(
-    @InjectModel(Task.name)
-    private taskModel: Model<Task>,
+    @InjectRepository(TaskRepository)
+    private taskRepository: TaskRepository,
   ) {}
 
-  async create(createTaskDto: createTaskDto) {
-    const { name, description, status } = createTaskDto;
-    const task = await this.taskModel.create({
-      name,
-      description,
-    });
-  }
+  // async createMany(tasks: TaskEntity[]) {
+  //   const queryRunner = this.dataSource.createQueryRunner();
+  //   await queryRunner.connect();
+  //   await queryRunner.startTransaction();
+  //   try {
+  //     await queryRunner.manager.save(tasks[0]);
+  //     await queryRunner.manager.save(tasks[1]);
 
-  async findAll(search: string): Promise<createTaskDto[]> {
-    const result = await this.taskModel.find().exec();
-    if (search)
-      return result.filter((task) =>
-        task.name.toLowerCase().includes(search.toLowerCase()),
-      );
+  //     await queryRunner.commitTransaction();
+  //   } catch (err) {
+  //     await queryRunner.rollbackTransaction();
+  //   } finally {
+  //     await queryRunner.release();
+  //   }
+  // }
 
-    return result;
-  }
+  // findAll(search): Promise<TaskEntity[]> {
+  //   const array = this.taskRepository.find();
+  //   console.log('array');
+  //   return array;
+  // }
 
-  async findOne(id: number): Promise<String> {
-    return this.taskModel.findById(id);
-  }
+  // async create(createTaskDto: createTaskDto) {
+  //   const { name, description, status } = createTaskDto;
+  //   const task = await this.taskModel.create({
+  //     name,
+  //     description,
+  //   });
+  // }
 
-  async findOneAndUpdate(id: number, createTaskDto: createTaskDto) {
-    const exixstTask = await this.taskModel.findById(id);
-    if (!exixstTask) {
-      throw new NotFoundException(`tas id:${id}not found`);
+  // async findAll(search: string): Promise<createTaskDto[]> {
+  //   const result = await this.taskModel.find().exec();
+  //   if (search)
+  //     return result.filter((task) =>
+  //       task.name.toLowerCase().includes(search.toLowerCase()),
+  //     );
+
+  //   return result;
+  // }
+
+  // async findOne(id: number): Promise<TaskEntity> {
+  //   return this.taskRepository.findOneBy({ id });
+  // }
+  // async findOne(id: number): Promise<String> {
+  //   return this.taskModel.findById(id);
+  // }
+
+  // async findOneAndUpdate(id: number, createTaskDto: createTaskDto) {
+  //   const exixstTask = await this.taskModel.findById(id);
+  //   if (!exixstTask) {
+  //     throw new NotFoundException(`tas id:${id}not found`);
+  //   }
+  //   return this.taskModel.findByIdAndUpdate(id, createTaskDto, {
+  //     new: true,
+  //   });
+  // }
+  // async findOneAndDelete(id: number): Promise<void> {
+  //   await this.taskRepository.delete(id);
+  // }
+
+  async getTaskById(id: number) {
+    const found = await this.taskRepository.findOneBy({ id });
+
+    if (!found) {
+      throw new NotFoundException(`Error......Tasks ${id} Not Found`);
     }
-    return this.taskModel.findByIdAndUpdate(id, createTaskDto, {
-      new: true,
-    });
+    return found;
   }
-  async findOneAndDelete(id: number | string): Promise<String> {
-    return await this.taskModel.findByIdAndDelete(id);
+
+  async delete(id: number) {
+    const del = await this.taskRepository.delete({ id });
+    console.log(del);
+    return del;
+  }
+
+  async findAll(filterDto: GetTaskFilterDto) {
+    return this.taskRepository.getTasks(filterDto);
+  }
+
+  async createTask(createTaskDto: createTaskDto) {
+    //console.log(createTaskDto);
+    const newTask = await this.taskRepository.createTask(createTaskDto);
+    return newTask;
   }
 }
