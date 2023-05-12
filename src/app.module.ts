@@ -21,6 +21,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { TasksController } from './tasks/tasks.controller';
 import { CommonModule } from 'common/common.module';
+import { UploadsModule } from './uploads/uploads.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -33,24 +34,25 @@ import { CommonModule } from 'common/common.module';
       entities: [TaskEntity],
       synchronize: true,
     }),
+
     CacheModule.register(),
     MongooseModule.forRoot(process.env.DB_URI),
     AuthModule,
     CatsModule,
     TasksModule,
     CommonModule,
+    UploadsModule,
   ],
 })
 export class AppModule {
   constructor(private dataSource: DataSource) {}
-  // configure(consumer: MiddlewareConsumer) {
-  //   consumer
-  //     .apply(apiTokenCheck)
-  //     //*.exclude({path:'cats',method : RequestMethod.GET})
-  //     .forRoutes(
-  //       { path: '*', method: RequestMethod.ALL },
-  //       CatsController,
-  //       TasksController,
-  //     );
-  // }
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware)
+      .forRoutes(
+        { path: '*', method: RequestMethod.ALL },
+        CatsController,
+        TasksController,
+      );
+  }
 }

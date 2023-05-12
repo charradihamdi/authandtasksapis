@@ -7,6 +7,7 @@ import {
   Scope,
   Inject,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 //import { Task } from './interface/task.interface';
@@ -23,18 +24,21 @@ import {
   EntitySubscriberInterface,
   EventSubscriber,
   InsertEvent,
+  createQueryBuilder,
 } from 'typeorm';
 import { Request } from 'express';
 import { TaskRepository } from './repository/task.repository';
 import { GetTaskFilterDto } from './dto/get-filter.dto';
 import { statusTask } from './enum/status.enum';
+import { UpdateTaskDto } from './dto/updateTask.Dto';
 @Injectable()
 export class TasksService {
   constructor(
     @InjectRepository(TaskEntity)
     private taskRepository: Repository<TaskEntity>,
+    private dataSource: DataSource,
   ) {}
-
+  private logger = new Logger('TaskRepository');
   // async createMany(tasks: TaskEntity[]) {
   //   const queryRunner = this.dataSource.createQueryRunner();
   //   await queryRunner.connect();
@@ -110,8 +114,27 @@ export class TasksService {
     return del;
   }
 
-  async findAll(filterDto: GetTaskFilterDto) {
-    return this.taskRepository.find();
+  async findAll({ search, status }) {
+    //const { status, search } = filterDto;
+    console.log(search);
+    const query = this.taskRepository.createQueryBuilder('task');
+
+    if (status) {
+      query.andWhere('task.status = :status', { status });
+    }
+    if (search) {
+      query.andWhere(
+        '(task.name LIKE :search OR task.description LIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+    try {
+      const tasks = await query.getMany();
+      return tasks;
+    } catch (error) {
+      this.logger.error(`Failed to get tasks for user " ,Filters: `);
+      throw new InternalServerErrorException();
+    }
   }
 
   async createTask(createTaskDto: createTaskDto): Promise<any> {
@@ -120,11 +143,17 @@ export class TasksService {
     task.name = name;
     task.description = description;
     task.status = statusTask.OPEN;
+    console.log('task', task);
     try {
       await task.save();
     } catch (error) {
       throw new InternalServerErrorException();
     }
     return task;
+  }
+
+  async updateTask(id: number, updateTask: UpdateTaskDto) {
+    const { name, description, status } = updateTask;
+    return await this.taskRepository.update({ id }, { name, description });
   }
 }

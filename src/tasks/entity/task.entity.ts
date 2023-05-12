@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { statusTask } from 'tasks/enum/status.enum';
 
-@Entity()
+@Entity({ name: 'task' })
 export class TaskEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
