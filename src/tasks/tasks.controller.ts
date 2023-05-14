@@ -1,72 +1,89 @@
-import { ConfigService } from '@nestjs/config';
 import {
-  Body,
   Controller,
-  Delete,
   Get,
+  Post,
+  Delete,
+  Body,
   Param,
   Patch,
-  Post,
-  Put,
   Query,
-  Logger,
+  UsePipes,
+  ValidationPipe,
   UseGuards,
-} from '@nestjs/common';
-import { TasksService } from './tasks.service';
-import { createTaskDto } from './dto/create-task.dto';
-import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
-import { number } from 'joi';
-import { TaskEntity } from './entity/task.entity';
-import { TaskDto } from './dto/task.dto';
-import { GetTaskFilterDto } from './dto/get-filter.dto';
-import { ToUpperCasePipe } from './pipes/to-upper-case/to-upper-case.pipe';
-import { AdminGuard } from 'auth/auth.guard.spec';
-import { UpdateTaskDto } from './dto/updateTask.Dto';
-@Controller('tasks')
+  Logger,
+} from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
+import { TasksService } from "./tasks.service";
+import { CreateNewTaskDto } from "./dto/create-new-task.dto";
+import { ReadTasksFilterDto } from "./dto/read-tasks-filter.dto";
+import { TaskStatusValidationPipe } from "./pipes/task-status-validation.pipe";
+import { Task } from "./task.entity";
+import { TaskStatus } from "./task-status.enum";
+import { User } from "../auth/user.entity";
+import { ReadUser } from "../auth/read-user.decorator";
+
+@Controller("/tasks")
+@UseGuards(AuthGuard())
 export class TasksController {
-  private Logger = new Logger('task controller');
-  constructor(private taskService: TasksService) {}
+  private logger = new Logger("TasksController");
+
+  constructor(private tasksService: TasksService) {}
+
   @Post()
-  //@UseGuards(AdminGuard)
-  // @ApiResponse({
-  //   status: 201,
-  //   description: 'The Task has been successfully created.',
-  // })
-  //@ApiResponse({ status: 403, description: 'Forbidden.' })
-  async create(@Body() createTaskDto: createTaskDto) {
-    const { name, description, status } = createTaskDto;
-    console.log(createTaskDto);
-    return this.taskService.createTask(createTaskDto);
+  @UsePipes(ValidationPipe)
+  createNewTask(
+    @Body() newTaskDto: CreateNewTaskDto,
+    @ReadUser() user: User,
+  ): Promise<Task> {
+    this.logger.verbose(
+      `Creating new tasks for the User ${
+        user.username
+      }. Created Data: ${JSON.stringify(newTaskDto)}`,
+    );
+    return this.tasksService.createNewTask(newTaskDto, user);
   }
+
   @Get()
-  async findAll(
-    filterDto: GetTaskFilterDto,
-    @Query('search') search?: string,
-    @Query('status') status?: string,
-  ): Promise<TaskEntity[]> {
-    this.Logger.log(search);
-    return this.taskService.findAll({ search, status });
-  }
-  @Get(':id')
-  async getTaskById(@Param('id') id: number) {
-    return this.taskService.getTaskById(id);
+  readTasks(
+    @Query(ValidationPipe) filterDto: ReadTasksFilterDto,
+    @ReadUser() user: User,
+  ) {
+    this.logger.verbose(
+      `Reading tasks for the User ${
+        user.username
+      } with filters: ${JSON.stringify(filterDto)}.`,
+    );
+    return this.tasksService.readTasks(filterDto, user);
   }
 
-  @Put(':id')
-  async findOneAndUpdate(
-    @Param('id')
-    id: number,
-    @Body()
-    updateTask: UpdateTaskDto,
-  ) {
-    return this.taskService.updateTask(id, updateTask);
+  @Get("/:id")
+  readTaskById(@Param("id") id: string, @ReadUser() user: User): Promise<Task> {
+    this.logger.verbose(
+      `Reading task for the User ${user.username} with id: ${id}.`,
+    );
+    return this.tasksService.readTaskById(id, user);
   }
 
-  @Delete(':id')
-  async findOneAndDelete(
-    @Param('id')
-    id: number,
-  ) {
-    return this.taskService.delete(id);
+  @Patch("/:id/status")
+  updateTaskStatusById(
+    @Param("id") id: string,
+    @Body("status", TaskStatusValidationPipe) status: TaskStatus,
+    @ReadUser() user: User,
+  ): Promise<Task> {
+    this.logger.verbose(
+      `Updating task status for the User ${user.username} with id: ${id}. Updated Status: ${status}`,
+    );
+    return this.tasksService.updateTaskStatusById(id, status, user);
+  }
+
+  @Delete("/:id")
+  deleteTaskById(
+    @Param("id") id: string,
+    @ReadUser() user: User,
+  ): Promise<void> {
+    this.logger.verbose(
+      `Deleting task status for the User ${user.username} with id: ${id}.`,
+    );
+    return this.tasksService.deleteTaskById(id, user);
   }
 }

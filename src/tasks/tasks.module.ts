@@ -1,19 +1,13 @@
-import { TaskEntity } from './entity/task.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Module } from '@nestjs/common';
-import { TasksController } from './tasks.controller';
-import { TasksService } from './tasks.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Task, taskSchema } from './schemas/task.schema';
-import { TaskRepository } from './repository/task.repository';
+import { Module } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { TasksController } from "./tasks.controller";
+import { TasksService } from "./tasks.service";
+import { TaskRepository } from "./task.repository";
+import { AuthModule } from "../auth/auth.module";
 
 @Module({
-  imports: [
-    // MongooseModule.forFeature([{ name: Task.name, schema: taskSchema }]),
-    TypeOrmModule.forFeature([TaskEntity, TaskRepository]),
-  ],
-
+  imports: [TypeOrmModule.forFeature([TaskRepository]), AuthModule],
   controllers: [TasksController],
-  providers: [TasksService, TaskRepository],
+  providers: [TasksService],
 })
 export class TasksModule {}

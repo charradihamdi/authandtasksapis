@@ -1,19 +1,23 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
-import { SignUpDto } from './dto/signup.dto';
+import { Controller, Post, Body, ValidationPipe } from "@nestjs/common";
+import { AuthCredentialsDto } from "./dto/auth-credential.dto";
+import { AuthService } from "./auth.service";
+import { JwtAccessToken } from "./jwt-access-token-interface";
 
-@Controller('auth')
+@Controller("/auth")
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('/signup')
-  signUp(@Body() signUpDto: SignUpDto): Promise<{ token: string }> {
-    return this.authService.signUp(signUpDto);
+  @Post("/signup")
+  signupUser(
+    @Body(ValidationPipe) credentialsDto: AuthCredentialsDto,
+  ): Promise<void> {
+    return this.authService.signupUser(credentialsDto);
   }
 
-  @Post('/login')
-  login(@Body() loginDto: LoginDto): Promise<{ token: string }> {
-    return this.authService.login(loginDto);
+  @Post("/login")
+  loginUser(
+    @Body(ValidationPipe) credentialsDto: AuthCredentialsDto,
+  ): Promise<JwtAccessToken> {
+    return this.authService.loginUser(credentialsDto);
   }
 }

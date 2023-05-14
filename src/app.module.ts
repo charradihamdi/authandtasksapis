@@ -1,4 +1,3 @@
-import { TaskEntity } from './tasks/entity/task.entity';
 import {
   MiddlewareConsumer,
   Module,
@@ -22,18 +21,10 @@ import { DataSource } from 'typeorm';
 import { TasksController } from './tasks/tasks.controller';
 import { CommonModule } from 'common/common.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { typeOrmConfig } from './type-orm.config';
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: '127.0.0.1',
-      port: 5444,
-      username: 'postgres',
-      password: '123456',
-      database: 'tasks',
-      entities: [TaskEntity],
-      synchronize: true,
-    }),
+    TypeOrmModule.forRoot(typeOrmConfig),
 
     CacheModule.register(),
     MongooseModule.forRoot(process.env.DB_URI),

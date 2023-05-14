@@ -1,55 +1,37 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User } from './schemas/user.schema';
-
-import * as bcrypt from 'bcryptjs';
-import { JwtService } from '@nestjs/jwt';
-import { SignUpDto } from './dto/signup.dto';
-import { LoginDto } from './dto/login.dto';
+import { Injectable, UnauthorizedException, Logger } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { JwtService } from "@nestjs/jwt";
+import { UserRepository } from "./user.repository";
+import { AuthCredentialsDto } from "./dto/auth-credential.dto";
+import { JwtPayload } from "./jwt-payload-interface";
+import { JwtAccessToken } from "./jwt-access-token-interface";
 
 @Injectable()
 export class AuthService {
+  private logger = new Logger("AuthService");
+
   constructor(
-    @InjectModel(User.name)
-    private userModel: Model<User>,
+    @InjectRepository(UserRepository) private userRepository: UserRepository,
     private jwtService: JwtService,
   ) {}
 
-  async signUp(signUpDto: SignUpDto): Promise<{ token: string }> {
-    const { name, email, password } = signUpDto;
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await this.userModel.create({
-      name,
-      email,
-      password: hashedPassword,
-    });
-
-    const token = this.jwtService.sign({ id: user._id });
-
-    return { token };
+  signupUser(credentialsDto: AuthCredentialsDto): Promise<void> {
+    return this.userRepository.createNewUser(credentialsDto);
   }
 
-  async login(loginDto: LoginDto): Promise<{ token: string }> {
-    const { email, password } = loginDto;
-
-    const user = await this.userModel.findOne({ email });
-
-    if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+  async loginUser(credentialsDto: AuthCredentialsDto): Promise<JwtAccessToken> {
+    const username = await this.userRepository.validateUserPassword(
+      credentialsDto,
+    );
+    if (!username) {
+      throw new UnauthorizedException("Invalid Credentials.");
     }
+    const payload: JwtPayload = { username };
+    const accessToken = await this.jwtService.sign(payload);
 
-    const isPasswordMatched = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordMatched) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
-
-    const token = this.jwtService.sign({ id: user._id });
-
-    return { token };
+    this.logger.debug(
+      `Generated JWT token with payload: ${JSON.stringify(payload)}`,
+    );
+    return { accessToken };
   }
-
 }
