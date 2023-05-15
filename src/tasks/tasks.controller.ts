@@ -11,21 +11,21 @@ import {
   ValidationPipe,
   UseGuards,
   Logger,
-} from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
-import { TasksService } from "./tasks.service";
-import { CreateNewTaskDto } from "./dto/create-new-task.dto";
-import { ReadTasksFilterDto } from "./dto/read-tasks-filter.dto";
-import { TaskStatusValidationPipe } from "./pipes/task-status-validation.pipe";
-import { Task } from "./task.entity";
-import { TaskStatus } from "./task-status.enum";
-import { User } from "../auth/user.entity";
-import { ReadUser } from "../auth/read-user.decorator";
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { TasksService } from './tasks.service';
+import { CreateNewTaskDto } from './dto/create-new-task.dto';
+import { ReadTasksFilterDto } from './dto/read-tasks-filter.dto';
+import { TaskStatusValidationPipe } from './pipes/task-status-validation.pipe';
+import { Task } from './task.entity';
+import { TaskStatus } from './task-status.enum';
+import { User } from '../auth/user.entity';
+import { ReadUser } from '../auth/read-user.decorator';
 
-@Controller("/tasks")
+@Controller('/tasks')
 @UseGuards(AuthGuard())
 export class TasksController {
-  private logger = new Logger("TasksController");
+  private logger = new Logger('TasksController');
 
   constructor(private tasksService: TasksService) {}
 
@@ -56,18 +56,18 @@ export class TasksController {
     return this.tasksService.readTasks(filterDto, user);
   }
 
-  @Get("/:id")
-  readTaskById(@Param("id") id: string, @ReadUser() user: User): Promise<Task> {
+  @Get('/:id')
+  readTaskById(@Param('id') id: string, @ReadUser() user: User): Promise<Task> {
     this.logger.verbose(
       `Reading task for the User ${user.username} with id: ${id}.`,
     );
     return this.tasksService.readTaskById(id, user);
   }
 
-  @Patch("/:id/status")
+  @Patch('/:id/status')
   updateTaskStatusById(
-    @Param("id") id: string,
-    @Body("status", TaskStatusValidationPipe) status: TaskStatus,
+    @Param('id') id: string,
+    @Body('status', TaskStatusValidationPipe) status: TaskStatus,
     @ReadUser() user: User,
   ): Promise<Task> {
     this.logger.verbose(
@@ -76,9 +76,9 @@ export class TasksController {
     return this.tasksService.updateTaskStatusById(id, status, user);
   }
 
-  @Delete("/:id")
+  @Delete('/:id')
   deleteTaskById(
-    @Param("id") id: string,
+    @Param('id') id: string,
     @ReadUser() user: User,
   ): Promise<void> {
     this.logger.verbose(

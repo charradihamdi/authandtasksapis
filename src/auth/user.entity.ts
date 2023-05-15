@@ -5,14 +5,14 @@ import {
   Column,
   Unique,
   OneToMany,
-} from "typeorm";
-import * as bcrypt from "bcryptjs";
-import { Task } from "../tasks/task.entity";
+} from 'typeorm';
+import * as bcrypt from 'bcryptjs';
+import { Task } from '../tasks/task.entity';
 
-@Entity({ name: "users" })
-@Unique(["username"])
+@Entity({ name: 'users' })
+@Unique(['username'])
 export class User extends BaseEntity {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
@@ -24,11 +24,7 @@ export class User extends BaseEntity {
   @Column()
   salt: string;
 
-  @OneToMany(
-    type => Task,
-    task => task.user,
-    { eager: true },
-  )
+  @OneToMany((type) => Task, (task) => task.user, { eager: true })
   tasks: Task[];
 
   async validatePassword(password: string): Promise<boolean> {

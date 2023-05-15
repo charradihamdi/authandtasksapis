@@ -1,6 +1,6 @@
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './../auth/auth.module';
-import { ConfigServiceRoot } from './../config/configurations';
+import { ConfigServiceRoot } from './configurations';
 import { Module, Global } from '@nestjs/common';
 
 @Global()
@@ -13,5 +13,6 @@ import { Module, Global } from '@nestjs/common';
     }),
   ],
   providers: [ConfigServiceRoot],
+  exports: [ConfigServiceRoot],
 })
 export class CommonModule {}

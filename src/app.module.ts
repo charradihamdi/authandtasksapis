@@ -14,36 +14,30 @@ import { CatsController } from './cats/cats.controller';
 import { TasksModule } from './tasks/tasks.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { apiTokenCheck } from './middlware/token.Middlware';
-import { ConfigServiceRoot } from './config/configurations';
+import { ConfigServiceRoot } from './common/configurations';
 import databaseConfig from './config/database.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { TasksController } from './tasks/tasks.controller';
 import { CommonModule } from 'common/common.module';
 import { UploadsModule } from './uploads/uploads.module';
-import { typeOrmConfig } from './type-orm.config';
+import { TpeOrmConfigAsync } from './type-orm.config';
 @Module({
   imports: [
-    TypeOrmModule.forRoot(typeOrmConfig),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigServiceRoot],
+      useFactory: async (config: ConfigServiceRoot) => {
+        return config.TypeOrmConfig;
+      },
+    }),
 
-    CacheModule.register(),
-    MongooseModule.forRoot(process.env.DB_URI),
+    // CacheModule.register(),
+    // MongooseModule.forRoot(process.env.DB_URI),
     AuthModule,
-    CatsModule,
+    // CatsModule,
     TasksModule,
+    // UploadsModule,
     CommonModule,
-    UploadsModule,
   ],
 })
-export class AppModule {
-  constructor(private dataSource: DataSource) {}
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggerMiddleware)
-      .forRoutes(
-        { path: '*', method: RequestMethod.ALL },
-        CatsController,
-        TasksController,
-      );
-  }
-}
+export class AppModule {}

@@ -4,7 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 import { HttpExceptionFilter } from './cats/FILTERS/http-exception.filter';
 import { CommonModule } from './common/common.module';
-import { ConfigServiceRoot } from './config/configurations';
+import { ConfigServiceRoot } from './common/configurations';
 import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,9 +22,9 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  app.useGlobalFilters(new HttpExceptionFilter());
+
   await app.listen(configurService.test.port);
 
-  console.log(`Server at ${configurService.test.port}`);
+  // console.log(`Server at ${configurService.test.port}`);
 }
 bootstrap();
