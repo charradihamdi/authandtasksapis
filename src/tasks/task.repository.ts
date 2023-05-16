@@ -1,27 +1,32 @@
-import { EntityRepository, Repository } from "typeorm";
-import { Task } from "./task.entity";
-import { CreateNewTaskDto } from "./dto/create-new-task.dto";
-import { TaskStatus } from "./task-status.enum";
-import { ReadTasksFilterDto } from "./dto/read-tasks-filter.dto";
-import { User } from "../auth/user.entity";
-import { Logger, InternalServerErrorException } from "@nestjs/common";
+import { EntityRepository, Repository } from 'typeorm';
+import { Task } from './task.entity';
+import { CreateNewTaskDto } from './dto/create-new-task.dto';
+import { TaskStatus } from './task-status.enum';
+import { ReadTasksFilterDto } from './dto/read-tasks-filter.dto';
+import { User } from '../auth/user.entity';
+import {
+  Logger,
+  InternalServerErrorException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 
-@EntityRepository(Task)
+@Injectable()
 export class TaskRepository extends Repository<Task> {
-  private logger = new Logger("TaskRepository");
+  private logger = new Logger('TaskRepository');
 
   async readTasks(
     { status, search }: ReadTasksFilterDto,
     user: User,
   ): Promise<Task[]> {
-    const query = this.createQueryBuilder("task");
-    query.where("task.userId = :userId", { userId: user.id });
+    const query = this.createQueryBuilder('task');
+    query.where('task.userId = :userId', { userId: user.id });
     if (status) {
-      query.andWhere("task.status = :status", { status });
+      query.andWhere('task.status = :status', { status });
     }
     if (search) {
       query.andWhere(
-        "(task.title LIKE :search OR task.description LIKE :search)",
+        '(task.title LIKE :search OR task.description LIKE :search)',
         { search: `%${search}%` },
       );
     }

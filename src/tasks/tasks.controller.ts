@@ -12,7 +12,7 @@ import {
   UseGuards,
   Logger,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+// import { AuthGuard } from '@nestjs/passport';
 import { TasksService } from './tasks.service';
 import { CreateNewTaskDto } from './dto/create-new-task.dto';
 import { ReadTasksFilterDto } from './dto/read-tasks-filter.dto';
@@ -21,9 +21,10 @@ import { Task } from './task.entity';
 import { TaskStatus } from './task-status.enum';
 import { User } from '../auth/user.entity';
 import { ReadUser } from '../auth/read-user.decorator';
+import { AuthGuard } from 'auth/jwt-auth.guard';
 
 @Controller('/tasks')
-@UseGuards(AuthGuard())
+@UseGuards(AuthGuard)
 export class TasksController {
   private logger = new Logger('TasksController');
 
