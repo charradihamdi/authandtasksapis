@@ -19,7 +19,7 @@ export class TaskRepository extends Repository<Task> {
     { status, search }: ReadTasksFilterDto,
     user: User,
   ): Promise<Task[]> {
-    const query = this.createQueryBuilder('task');
+    const query = Task.createQueryBuilder('task');
     query.where('task.userId = :userId', { userId: user.id });
     if (status) {
       query.andWhere('task.status = :status', { status });
@@ -45,14 +45,15 @@ export class TaskRepository extends Repository<Task> {
   }
 
   async createNewTask(
-    { title, description }: CreateNewTaskDto,
+    { title, description, status }: CreateNewTaskDto,
     user: User,
   ): Promise<Task> {
     const task = new Task();
     task.title = title;
     task.description = description;
-    task.status = TaskStatus.OPEN;
+    task.status = status;
     task.user = user;
+
     try {
       await task.save();
       delete task.user;
