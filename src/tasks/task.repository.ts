@@ -1,3 +1,4 @@
+import { Order } from 'common/enum/order.enum';
 import { EntityRepository, Repository } from 'typeorm';
 import { Task } from './task.entity';
 import { CreateNewTaskDto } from './dto/create-new-task.dto';
@@ -17,14 +18,14 @@ export class TaskRepository extends Repository<Task> {
   private logger = new Logger('TaskRepository');
 
   async readTasks(
-    { status, search, take, skip }: ReadTasksFilterDto,
+    { status, search, take, skip, order, fieldName }: ReadTasksFilterDto,
     user: User,
   ): Promise<Task[]> {
     const query = Task.createQueryBuilder('task').take(take).skip(skip);
 
     query
       .where('task.userId = :userId', { userId: user.id })
-      .orderBy('task.id', 'ASC');
+      .orderBy('task.id', order);
 
     if (status) {
       query.andWhere('task.status = :status', { status });
