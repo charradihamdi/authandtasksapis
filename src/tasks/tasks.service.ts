@@ -24,16 +24,8 @@ export class TasksService {
     return this.taskRepository.readTasks(filterDto, user);
   }
 
-  async readTaskById(id: string, user: User): Promise<Task> {
-    const found = await this.taskRepository.findOne({
-      where: { id, userId: user.id },
-    });
-    if (!found) {
-      throw new NotFoundException(
-        `Task with id: ${id} for user ${user.username} not found.`,
-      );
-    }
-    return found;
+  async readTaskById(id: string, user: User): Promise<any> {
+    return await this.taskRepository.findTask(id);
   }
 
   createNewTask(newTaskDto: CreateNewTaskDto, user: User): Promise<Task> {

@@ -9,7 +9,7 @@ import { User } from './user.entity';
 import { ConfigServiceRoot } from 'common/configurations';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'access_token') {
   constructor(
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,

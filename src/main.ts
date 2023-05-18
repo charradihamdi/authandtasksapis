@@ -9,11 +9,11 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configurService = app.select(CommonModule).get(ConfigServiceRoot);
-  // app.useGlobalPipes(
-  //   new ValidationPipe({
-  //     whitelist: true,
-  //   }),
-  // );
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+    }),
+  );
   const config = new DocumentBuilder()
     .setTitle('task example')
     .setDescription('The tasks API description')

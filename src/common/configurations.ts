@@ -87,6 +87,16 @@ export class ConfigServiceRoot {
     };
   }
 
+  get rtSecret() {
+    return {
+      uri: this.getString('JWT_JT_SECRET'),
+    };
+  }
+  get rtExpire() {
+    return {
+      uri: this.getNumber('JWT_JT_EXPIRE'),
+    };
+  }
   get jwtsecret() {
     return {
       uri: this.getString('JWT_SECRET'),

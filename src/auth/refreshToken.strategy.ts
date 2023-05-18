@@ -29,13 +29,14 @@ export class RefreshJwtStrategy extends PassportStrategy(
         },
       ]),
 
-      //secretOrKey: confiService.rtSecret,
+      secretOrKey: confiService.rtSecret,
       passReqToCallback: true,
     });
   }
 
   async validate({ username }: JwtPayload): Promise<User> {
     const user = await this.userRepository.findOneBy({ username });
+
     if (!user) {
       throw new NotFoundException(
         `refresh token not assigned to this use : ${username}`,

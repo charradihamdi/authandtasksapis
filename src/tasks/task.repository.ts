@@ -9,6 +9,7 @@ import {
   InternalServerErrorException,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 
 @Injectable()
@@ -16,10 +17,12 @@ export class TaskRepository extends Repository<Task> {
   private logger = new Logger('TaskRepository');
 
   async readTasks(
-    { status, search }: ReadTasksFilterDto,
+    { status, search, take, skip }: ReadTasksFilterDto,
     user: User,
   ): Promise<Task[]> {
-    const query = Task.createQueryBuilder('task');
+    console.log('take,skip', typeof take, typeof skip);
+    const query = Task.createQueryBuilder('task').take(2).skip(0);
+
     query.where('task.userId = :userId', { userId: user.id });
     if (status) {
       query.andWhere('task.status = :status', { status });
@@ -41,6 +44,18 @@ export class TaskRepository extends Repository<Task> {
         error.stack,
       );
       throw new InternalServerErrorException();
+    }
+  }
+  async findTask(id: string) {
+    try {
+      const taskD = await Task.findOneBy({ id });
+      console.log(taskD);
+      const query = Task.createQueryBuilder('task');
+      query.andWhere('task.id = :id', { id });
+      const task = await query.getMany();
+      return task;
+    } catch (err) {
+      throw new NotFoundException(`task with ${id} not found`);
     }
   }
 
