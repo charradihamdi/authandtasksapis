@@ -65,7 +65,7 @@ export class TasksController {
     return this.tasksService.readTaskById(id, user);
   }
 
-  @Patch('/:id/status')
+  @Patch('/:id')
   updateTaskStatusById(
     @Param('id') id: string,
     @Body('status', TaskStatusValidationPipe) status: TaskStatus,

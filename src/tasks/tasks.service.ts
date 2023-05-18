@@ -12,6 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TaskStatus } from './task-status.enum';
 import { User } from '../auth/user.entity';
 import { Repository } from 'typeorm';
+import { string } from 'joi';
 
 @Injectable()
 export class TasksService {
@@ -44,12 +45,7 @@ export class TasksService {
   }
 
   async deleteTaskById(id: string, user: User): Promise<void> {
-    const result = await this.taskRepository.delete({ id, userId: user.id });
-    if (result.affected === 0) {
-      throw new NotFoundException(
-        `Task with id: ${id} for user ${user.username} not found for deleting the task.`,
-      );
-    }
+    const result = await this.taskRepository.deleteTask(id);
   }
 }
 // export class TasksService {

@@ -20,10 +20,12 @@ export class TaskRepository extends Repository<Task> {
     { status, search, take, skip }: ReadTasksFilterDto,
     user: User,
   ): Promise<Task[]> {
-    console.log('take,skip', typeof take, typeof skip);
-    const query = Task.createQueryBuilder('task').take(2).skip(0);
+    const query = Task.createQueryBuilder('task').take(take).skip(skip);
 
-    query.where('task.userId = :userId', { userId: user.id });
+    query
+      .where('task.userId = :userId', { userId: user.id })
+      .orderBy('task.id', 'ASC');
+
     if (status) {
       query.andWhere('task.status = :status', { status });
     }
@@ -48,11 +50,10 @@ export class TaskRepository extends Repository<Task> {
   }
   async findTask(id: string) {
     try {
-      const taskD = await Task.findOneBy({ id });
-      console.log(taskD);
-      const query = Task.createQueryBuilder('task');
-      query.andWhere('task.id = :id', { id });
-      const task = await query.getMany();
+      const task = await Task.findOneBy({ id });
+      if (!task) {
+        throw new NotFoundException(`task with id: ${id} not found`);
+      }
       return task;
     } catch (err) {
       throw new NotFoundException(`task with ${id} not found`);
@@ -84,6 +85,29 @@ export class TaskRepository extends Repository<Task> {
         error.stack,
       );
       throw new InternalServerErrorException();
+    }
+  }
+
+  async deleteTask(id: string) {
+    try {
+      const task = await this.findTask(id);
+
+      Task.delete(id);
+      return task;
+    } catch (err) {
+      throw new NotFoundException(`task with ${id} not found`);
+    }
+  }
+
+  async UpdateTaskStatus(id: string, status: TaskStatus, user: User) {
+    try {
+      const task = await this.findTask(id);
+
+      task.status = status;
+      await task.save();
+      return task;
+    } catch (err) {
+      throw new NotFoundException(`task with ${id} not found`);
     }
   }
 }

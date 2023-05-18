@@ -11,6 +11,7 @@ import { JwtAccessToken } from './jwt-access-token-interface';
 import { RefreshGuard } from './rt.guard';
 import { User } from './user.entity';
 import { ReadUser } from './read-user.decorator';
+import { getRefrechToken } from './dto/RefrechToken.dto';
 
 @Controller('/auth')
 export class AuthController {
